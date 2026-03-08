@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(zcat /Users/anne/Documents/project/ai_healthcare/datasets/prescriptions_subset.csv.gz)",
+      "Bash(zcat /Users/anne/Documents/project/ai_healthcare/datasets/diagnoses_subset.csv.gz)",
+      "Bash(gunzip -c /Users/anne/Documents/project/ai_healthcare/datasets/clinical_cases.csv.gz)",
+      "Bash(gunzip -c /Users/anne/Documents/project/ai_healthcare/datasets/labs_subset.csv.gz)",
+      "Bash(gunzip -c /Users/anne/Documents/project/ai_healthcare/datasets/prescriptions_subset.csv.gz)",
+      "Bash(for f in *.csv.gz)",
+      "Bash(do echo \"=== $f ===\")",
+      "Bash(zcat \"$f\")",
+      "Bash(done)",
+      "Bash(gzip -dc \"$f\")",
+      "Bash(pnpm --version)",
+      "Bash(pg_isready)",
+      "Bash(psql --version)",
+      "Bash(pnpm create next-app@latest . --typescript --tailwind --eslint --app --src-dir --no-import-alias --use-pnpm)",
+      "Bash(pnpm create next-app@latest clinical-reasoning-engine --typescript --tailwind --eslint --app --src-dir --no-import-alias --use-pnpm --turbopack)",
+      "Bash(pnpm dlx shadcn@latest init -d)"
+    ]
+  }
+}

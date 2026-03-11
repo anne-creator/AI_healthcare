@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum PatientStatus {
+  WAITING      // checked in at window, AI scoring fires immediately from prior history
+  TRIAGED      // nurse has completed assessment, AI score confirmed, queued for doctor
+  WITH_DOCTOR  // currently in bay being seen
+  DONE         // discharged or admitted
+}
+
+enum StaffRole {
+  NURSE
+  DOCTOR
+}
+
+// ---------------------------------------------------------------------------
+// MIMIC read-only tables (seeded from CSV, never mutated by the app)
+// ---------------------------------------------------------------------------
+
+model ClinicalCase {
+  caseId             String         @id @map("case_id")
+  subjectId          Int            @map("subject_id")
+  hadmId             Int            @unique @map("hadm_id")
+  age                Int
+  gender             String
+  admissionDiagnosis String         @map("admission_diagnosis")
+  dischargeSummary   String         @map("discharge_summary")
+
+  labs          Lab[]
+  prescriptions Prescription[]
+  diagnoses     Diagnosis[]
+  queuePatient  QueuePatient?
+
+  @@map("clinical_cases")
+}
+
+// ---------------------------------------------------------------------------
+// Live queue — the main dashboard
+// ---------------------------------------------------------------------------
+
+model QueuePatient {
+  id            String        @id @default(cuid())
+  hadmId        Int           @unique @map("hadm_id")   // FK → ClinicalCase
+  subjectId     Int           @map("subject_id")
+  arrivedAt     DateTime      @map("arrived_at")
+  status        PatientStatus @default(WAITING)
+  queuePosition Int           @map("queue_position")
+
+  // AI scoring — populated on WAITING (from prior history) and confirmed on TRIAGED
+  severityScore   Float?   @map("severity_score")    // 0–100
+  confidenceScore Float?   @map("confidence_score")  // 0–100
+  contradictions  Json?                               // Contradiction[]
+  aiSummary       String?  @map("ai_summary")        // one paragraph shown on card
+  // aiReasoning is NOT stored — streamed live on demand via Vercel AI SDK
+  scoredAt        DateTime? @map("scored_at")
+
+  case     ClinicalCase      @relation(fields: [hadmId], references: [hadmId])
+  notes    Note[]
+  feedback ScoringFeedback[]
+
+  @@map("queue_patients")
+}
+
+// ---------------------------------------------------------------------------
+// Notes — doctor and nurse notes per patient visit
+// ---------------------------------------------------------------------------
+
+model Note {
+  id        String       @id @default(cuid())
+  patientId String       @map("patient_id")
+  role      StaffRole
+  content   String
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  patient QueuePatient @relation(fields: [patientId], references: [id])
+
+  @@map("notes")
+}
+
+// ---------------------------------------------------------------------------
+// Scoring feedback — RL preference learning signal
+// Stored whenever doctor overrides queue position
+// ---------------------------------------------------------------------------
+
+model ScoringFeedback {
+  id           String      @id @default(cuid())
+  patientId    String      @map("patient_id")
+  originalRank Int         @map("original_rank")
+  adjustedRank Int         @map("adjusted_rank")
+  adjustedBy   StaffRole   @map("adjusted_by")
+  note         String?     // optional reason left by doctor
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  patient QueuePatient @relation(fields: [patientId], references: [id])
+
+  @@map("scoring_feedback")
+}
+
+model LabDictionary {
+  itemId   Int    @id @map("itemid")
+  labName  String @map("lab_name")
+  fluid    String
+  category String
+
+  labs Lab[]
+
+  @@map("lab_dictionary")
+}
+
+model DiagnosisDictionary {
+  icd9Code   String      @id @map("icd9_code")
+  shortTitle String      @map("short_title")
+  longTitle  String      @map("long_title")
+
+  diagnoses Diagnosis[]
+
+  @@map("diagnosis_dictionary")
+}
+
+model Lab {
+  id        Int           @id @default(autoincrement())
+  hadmId    Int           @map("hadm_id")
+  itemId    Int           @map("itemid")
+  charttime DateTime
+  value     Float?
+  unit      String?
+
+  case    ClinicalCase  @relation(fields: [hadmId], references: [hadmId])
+  labInfo LabDictionary @relation(fields: [itemId], references: [itemId])
+
+  @@map("labs_subset")
+}
+
+model Prescription {
+  id        Int          @id @default(autoincrement())
+  subjectId Int          @map("subject_id")
+  hadmId    Int          @map("hadm_id")
+  drug      String
+  doseValue Float?       @map("dose_value")
+  doseUnit  String?      @map("dose_unit")
+  route     String?
+  startdate DateTime?
+  enddate   DateTime?
+
+  case ClinicalCase @relation(fields: [hadmId], references: [hadmId])
+
+  @@map("prescriptions_subset")
+}
+
+model Diagnosis {
+  id        Int                 @id @default(autoincrement())
+  subjectId Int                 @map("subject_id")
+  hadmId    Int                 @map("hadm_id")
+  seqNum    Float?              @map("seq_num")
+  icd9Code  String              @map("icd9_code")
+
+  case     ClinicalCase        @relation(fields: [hadmId], references: [hadmId])
+  diagInfo DiagnosisDictionary @relation(fields: [icd9Code], references: [icd9Code])
+
+  @@map("diagnoses_subset")
+}

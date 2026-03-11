@@ -1,0 +1,382 @@
+{
+  "scanDate": "2026-03-09T19:02:38.054Z",
+  "totalAdmissionsScanned": 2000,
+  "selectedCount": 14,
+  "slotSummary": [
+    [
+      "drug_contradiction_metformin",
+      2
+    ],
+    [
+      "drug_contradiction_ace_inhibitor",
+      1
+    ],
+    [
+      "high_severity_high_confidence",
+      2
+    ],
+    [
+      "high_severity_low_confidence",
+      1
+    ],
+    [
+      "multiple_prior_admissions",
+      2
+    ],
+    [
+      "moderate_severity",
+      3
+    ],
+    [
+      "low_severity",
+      2
+    ],
+    [
+      "override_demo",
+      1
+    ]
+  ],
+  "selectedCases": [
+    {
+      "slot": "drug_contradiction_metformin",
+      "hadm_id": "148037",
+      "subject_id": "75972",
+      "age": 78,
+      "gender": "F",
+      "admission_diagnosis": "CORONARY ARTERY DISEASE",
+      "reason": "Metformin prescribed — Creatinine elevated at 1.6 mg/dL (contraindicated > 1.5)",
+      "severity": "HIGH",
+      "estimatedSeverityScore": 90,
+      "estimatedConfidenceScore": 100,
+      "contradictions": [
+        "Metformin prescribed — Creatinine elevated at 1.6 mg/dL (contraindicated > 1.5)",
+        "Warfarin prescribed — INR supratherapeutic at 6.9 (therapeutic range 2.0–3.0)"
+      ],
+      "priorAdmissionsCount": 0,
+      "labCount": 486,
+      "prescriptionCount": 122,
+      "diagnosisCodes": [
+        "4240",
+        "41071",
+        "5185",
+        "5849",
+        "5990"
+      ]
+    },
+    {
+      "slot": "drug_contradiction_metformin",
+      "hadm_id": "194906",
+      "subject_id": "68579",
+      "age": 64,
+      "gender": "M",
+      "admission_diagnosis": "(AML) ACUTE MYELOGENOUS LEUKEMIA\\BONE MARROW TRANSPLANT",
+      "reason": "Metformin prescribed — Creatinine elevated at 3.1 mg/dL (contraindicated > 1.5)",
+      "severity": "HIGH",
+      "estimatedSeverityScore": 88,
+      "estimatedConfidenceScore": 100,
+      "contradictions": [
+        "Metformin prescribed — Creatinine elevated at 3.1 mg/dL (contraindicated > 1.5)"
+      ],
+      "priorAdmissionsCount": 0,
+      "labCount": 2281,
+      "prescriptionCount": 365,
+      "diagnosisCodes": [
+        "20500",
+        "41091",
+        "51881",
+        "42821",
+        "5849"
+      ]
+    },
+    {
+      "slot": "drug_contradiction_ace_inhibitor",
+      "hadm_id": "130947",
+      "subject_id": "31183",
+      "age": 83,
+      "gender": "M",
+      "admission_diagnosis": "PNEUMONIA",
+      "reason": "ACE inhibitor prescribed — Potassium elevated at 6.1 mEq/L (threshold: 5.5)",
+      "severity": "HIGH",
+      "estimatedSeverityScore": 98,
+      "estimatedConfidenceScore": 100,
+      "contradictions": [
+        "ACE inhibitor prescribed — Potassium elevated at 6.1 mEq/L (threshold: 5.5)",
+        "Warfarin prescribed — INR supratherapeutic at 4.0 (therapeutic range 2.0–3.0)"
+      ],
+      "priorAdmissionsCount": 0,
+      "labCount": 1129,
+      "prescriptionCount": 244,
+      "diagnosisCodes": [
+        "42823",
+        "51881",
+        "5854",
+        "5849",
+        "5990"
+      ]
+    },
+    {
+      "slot": "high_severity_high_confidence",
+      "hadm_id": "114793",
+      "subject_id": "18353",
+      "age": 65,
+      "gender": "M",
+      "admission_diagnosis": "NECK PAIN;POSSIBLE INFECTION",
+      "reason": "Severity 98, Confidence 100 — 25080, 51881",
+      "severity": "CRITICAL",
+      "estimatedSeverityScore": 98,
+      "estimatedConfidenceScore": 100,
+      "contradictions": [
+        "NSAID prescribed — Active CKD diagnosis (NSAIDs worsen renal function)",
+        "NSAID prescribed — Active CHF diagnosis (NSAIDs cause fluid retention)"
+      ],
+      "priorAdmissionsCount": 0,
+      "labCount": 386,
+      "prescriptionCount": 93,
+      "diagnosisCodes": [
+        "25080",
+        "51881",
+        "40391",
+        "4254",
+        "486"
+      ]
+    },
+    {
+      "slot": "high_severity_high_confidence",
+      "hadm_id": "154590",
+      "subject_id": "27365",
+      "age": 65,
+      "gender": "M",
+      "admission_diagnosis": "ALTERED MENTAL STATUS",
+      "reason": "Severity 98, Confidence 100 — 51881, 44024",
+      "severity": "CRITICAL",
+      "estimatedSeverityScore": 98,
+      "estimatedConfidenceScore": 100,
+      "contradictions": [
+        "ACE inhibitor prescribed — Potassium elevated at 5.8 mEq/L (threshold: 5.5)",
+        "NSAID prescribed — Active CKD diagnosis (NSAIDs worsen renal function)",
+        "NSAID prescribed — Active CHF diagnosis (NSAIDs cause fluid retention)"
+      ],
+      "priorAdmissionsCount": 0,
+      "labCount": 499,
+      "prescriptionCount": 120,
+      "diagnosisCodes": [
+        "51881",
+        "44024",
+        "5856",
+        "40391",
+        "42822"
+      ]
+    },
+    {
+      "slot": "high_severity_low_confidence",
+      "hadm_id": "192330",
+      "subject_id": "26432",
+      "age": 68,
+      "gender": "F",
+      "admission_diagnosis": "ACUTE MI",
+      "reason": "High severity (70) but low data confidence (15) — flag for nurse review",
+      "severity": "HIGH",
+      "estimatedSeverityScore": 70,
+      "estimatedConfidenceScore": 15,
+      "contradictions": [],
+      "priorAdmissionsCount": 0,
+      "labCount": 0,
+      "prescriptionCount": 0,
+      "diagnosisCodes": [
+        "41011",
+        "41401"
+      ]
+    },
+    {
+      "slot": "multiple_prior_admissions",
+      "hadm_id": "166878",
+      "subject_id": "12113",
+      "age": 81,
+      "gender": "M",
+      "admission_diagnosis": "CELLULITIS;TELEMETRY",
+      "reason": "1 prior admissions on record — rich longitudinal history available",
+      "severity": "MODERATE",
+      "estimatedSeverityScore": 73,
+      "estimatedConfidenceScore": 100,
+      "contradictions": [
+        "ACE inhibitor prescribed — Potassium elevated at 7.2 mEq/L (threshold: 5.5)"
+      ],
+      "priorAdmissionsCount": 1,
+      "labCount": 943,
+      "prescriptionCount": 148,
+      "diagnosisCodes": [
+        "44024",
+        "42830",
+        "70715",
+        "6827",
+        "4280"
+      ]
+    },
+    {
+      "slot": "multiple_prior_admissions",
+      "hadm_id": "165728",
+      "subject_id": "15283",
+      "age": 73,
+      "gender": "M",
+      "admission_diagnosis": "LUNG TUMOR/SDA",
+      "reason": "1 prior admissions on record — rich longitudinal history available",
+      "severity": "MODERATE",
+      "estimatedSeverityScore": 40,
+      "estimatedConfidenceScore": 83,
+      "contradictions": [],
+      "priorAdmissionsCount": 1,
+      "labCount": 50,
+      "prescriptionCount": 0,
+      "diagnosisCodes": [
+        "1625",
+        "4928",
+        "V4581"
+      ]
+    },
+    {
+      "slot": "moderate_severity",
+      "hadm_id": "176783",
+      "subject_id": "24597",
+      "age": 74,
+      "gender": "F",
+      "admission_diagnosis": "AORTIC STENOSIS\\AORTIC VALVE REPLACEMENT/SDA",
+      "reason": "Moderate severity chronic condition — 4275, 5185",
+      "severity": "MODERATE",
+      "estimatedSeverityScore": 65,
+      "estimatedConfidenceScore": 100,
+      "contradictions": [
+        "NSAID prescribed — Active CHF diagnosis (NSAIDs cause fluid retention)"
+      ],
+      "priorAdmissionsCount": 0,
+      "labCount": 5098,
+      "prescriptionCount": 431,
+      "diagnosisCodes": [
+        "4275",
+        "5185",
+        "99661",
+        "7863",
+        "E8782"
+      ]
+    },
+    {
+      "slot": "moderate_severity",
+      "hadm_id": "103029",
+      "subject_id": "45317",
+      "age": 63,
+      "gender": "F",
+      "admission_diagnosis": "ACUTE MYELOID LEUKEMIA\\BONE MARROW TRANSPLANT",
+      "reason": "Moderate severity chronic condition — 20500, 4841",
+      "severity": "MODERATE",
+      "estimatedSeverityScore": 65,
+      "estimatedConfidenceScore": 100,
+      "contradictions": [
+        "NSAID prescribed — Active CHF diagnosis (NSAIDs cause fluid retention)"
+      ],
+      "priorAdmissionsCount": 0,
+      "labCount": 3842,
+      "prescriptionCount": 485,
+      "diagnosisCodes": [
+        "20500",
+        "4841",
+        "42831",
+        "99933",
+        "7907"
+      ]
+    },
+    {
+      "slot": "moderate_severity",
+      "hadm_id": "175729",
+      "subject_id": "21405",
+      "age": 84,
+      "gender": "M",
+      "admission_diagnosis": "ABDOMINAL AORTIC ANEURYSM/SDA",
+      "reason": "Moderate severity chronic condition — 4414, 5185",
+      "severity": "MODERATE",
+      "estimatedSeverityScore": 55,
+      "estimatedConfidenceScore": 100,
+      "contradictions": [],
+      "priorAdmissionsCount": 0,
+      "labCount": 2460,
+      "prescriptionCount": 219,
+      "diagnosisCodes": [
+        "4414",
+        "5185",
+        "99811",
+        "42731",
+        "9961"
+      ]
+    },
+    {
+      "slot": "low_severity",
+      "hadm_id": "181043",
+      "subject_id": "42186",
+      "age": 29,
+      "gender": "M",
+      "admission_diagnosis": "OVERDOSE",
+      "reason": "Low severity presentation — OVERDOSE",
+      "severity": "LOW",
+      "estimatedSeverityScore": 20,
+      "estimatedConfidenceScore": 93,
+      "contradictions": [],
+      "priorAdmissionsCount": 0,
+      "labCount": 122,
+      "prescriptionCount": 14,
+      "diagnosisCodes": [
+        "9630",
+        "34839",
+        "29620",
+        "V6284",
+        "E9504"
+      ]
+    },
+    {
+      "slot": "low_severity",
+      "hadm_id": "109255",
+      "subject_id": "69805",
+      "age": 85,
+      "gender": "M",
+      "admission_diagnosis": "AORTIC STENOSIS\\AVR; ? CORONARY ARTERY BYPASS GRAFT /SDA",
+      "reason": "Low severity presentation — AORTIC STENOSIS\\AVR; ? CORONARY ARTERY BYPASS GRAFT /SDA",
+      "severity": "LOW",
+      "estimatedSeverityScore": 20,
+      "estimatedConfidenceScore": 100,
+      "contradictions": [],
+      "priorAdmissionsCount": 0,
+      "labCount": 420,
+      "prescriptionCount": 144,
+      "diagnosisCodes": [
+        "4241",
+        "5845",
+        "2939",
+        "41401",
+        "42731"
+      ]
+    },
+    {
+      "slot": "override_demo",
+      "hadm_id": "140590",
+      "subject_id": "95599",
+      "age": 58,
+      "gender": "M",
+      "admission_diagnosis": "CORONARY ARTERY DISEASE\\CORONARY ARTERY BYPASS GRAFT /SDA",
+      "reason": "Demo override case — 2 contradiction(s), severity 75. Doctor will override rank live to trigger RL feedback loop.",
+      "severity": "MODERATE",
+      "estimatedSeverityScore": 75,
+      "estimatedConfidenceScore": 100,
+      "contradictions": [
+        "ACE inhibitor prescribed — Potassium elevated at 5.6 mEq/L (threshold: 5.5)",
+        "NSAID prescribed — Active CHF diagnosis (NSAIDs cause fluid retention)"
+      ],
+      "priorAdmissionsCount": 0,
+      "labCount": 283,
+      "prescriptionCount": 114,
+      "diagnosisCodes": [
+        "41401",
+        "42822",
+        "4280",
+        "2875",
+        "25060"
+      ]
+    }
+  ]
+}

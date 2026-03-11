@@ -1,65 +1,260 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { arrayMove } from "@dnd-kit/sortable";
+import { QueueHeaderBlock } from "@/components/blocks/queue-header-block";
+import { QueueListBlock } from "@/components/blocks/queue-list-block";
+import { OverrideModalBlock } from "@/components/blocks/override-modal-block";
+import { PatientRegistrationBlock } from "@/components/blocks/patient-registration-block";
+import { SectionSpacer } from "@/components/custom/section-spacer";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useQueueStream } from "@/hooks/use-queue-stream";
+import type { QueuePatientResponse, PatientStatusEnum } from "@/types";
+
+const STATUS_ORDER: PatientStatusEnum[] = [
+  "WAITING",
+  "TRIAGED",
+  "WITH_DOCTOR",
+  "DONE",
+];
+
+export default function QueuePage() {
+  const router = useRouter();
+
+  const [mode, setMode] = useState<"doctor" | "nurse">("doctor");
+  const [patients, setPatients] = useState<QueuePatientResponse[]>([]);
+  const [feedbackCount, setFeedbackCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [doctorNotes, setDoctorNotes] = useState<Record<string, string>>({});
+
+  // Override modal state
+  const [overrideState, setOverrideState] = useState<{
+    patientId: string;
+    patientLabel: string;
+    originalPosition: number;
+    newPosition: number;
+    reorderedPatients: QueuePatientResponse[];
+  } | null>(null);
+
+  // Registration dialog state
+  const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+
+  // Reset state
+  const [isResetting, setIsResetting] = useState(false);
+
+  // Initial data fetch
+  useEffect(() => {
+    async function load() {
+      const [queueRes, feedbackRes] = await Promise.all([
+        fetch("/api/queue"),
+        fetch("/api/queue/feedback"),
+      ]);
+
+      const queueData = await queueRes.json();
+      setPatients(queueData.patients);
+
+      if (feedbackRes.ok) {
+        const fbData = await feedbackRes.json();
+        setFeedbackCount(fbData.count ?? 0);
+      }
+
+      setLoading(false);
+    }
+    load();
+  }, []);
+
+  // SSE real-time updates
+  useQueueStream(
+    useCallback((updatedPatients: QueuePatientResponse[]) => {
+      setPatients(updatedPatients);
+    }, [])
+  );
+
+  // --- Action handlers (all at L5) ---
+
+  const handleReorder = useCallback(
+    (patientId: string, oldIndex: number, newIndex: number) => {
+      if (mode !== "doctor") return;
+
+      const patient = patients[oldIndex];
+      const optimistic = arrayMove(patients, oldIndex, newIndex);
+
+      setOverrideState({
+        patientId,
+        patientLabel: `Patient ${patient.hadmId} (${patient.age}${patient.gender === "M" ? "M" : "F"})`,
+        originalPosition: patient.queuePosition,
+        newPosition: newIndex + 1,
+        reorderedPatients: optimistic,
+      });
+    },
+    [mode, patients]
+  );
+
+  const handleOverrideConfirm = useCallback(
+    async (note: string) => {
+      if (!overrideState) return;
+
+      const { patientId, originalPosition, newPosition, reorderedPatients } =
+        overrideState;
+
+      // Optimistic update
+      setPatients(
+        reorderedPatients.map((p, i) => ({ ...p, queuePosition: i + 1 }))
+      );
+      setOverrideState(null);
+
+      const res = await fetch("/api/queue/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patientId,
+          originalRank: originalPosition,
+          adjustedRank: newPosition,
+          note: note || undefined,
+          adjustedBy: "DOCTOR",
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setPatients(data.patients);
+        setFeedbackCount((c) => c + 1);
+
+        if (note) {
+          setDoctorNotes((prev) => ({ ...prev, [patientId]: note }));
+        }
+      }
+    },
+    [overrideState]
+  );
+
+  const handleOverrideCancel = useCallback(() => {
+    setOverrideState(null);
+  }, []);
+
+  const handleStatusChange = useCallback(async (patientId: string) => {
+    const patient = patients.find((p) => p.id === patientId);
+    if (!patient) return;
+
+    const currentIdx = STATUS_ORDER.indexOf(patient.status);
+    const nextStatus = STATUS_ORDER[currentIdx + 1];
+    if (!nextStatus) return;
+
+    // Optimistic
+    setPatients((prev) =>
+      prev.map((p) =>
+        p.id === patientId ? { ...p, status: nextStatus } : p
+      )
+    );
+
+    const res = await fetch("/api/queue/status", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ patientId, newStatus: nextStatus }),
+    });
+
+    if (!res.ok) {
+      // Revert on failure — SSE will correct
+      const queueRes = await fetch("/api/queue");
+      const data = await queueRes.json();
+      setPatients(data.patients);
+    }
+  }, [patients]);
+
+  const handleViewPatient = useCallback(
+    (id: string) => {
+      router.push(`/patients/${id}`);
+    },
+    [router]
+  );
+
+  const handleRegisterPatient = useCallback(
+    async (chiefComplaint: string) => {
+      setIsRegistering(true);
+      try {
+        const res = await fetch("/api/demo/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chiefComplaint }),
+        });
+
+        if (res.ok) {
+          setRegistrationOpen(false);
+          // SSE will push the updated queue
+        }
+      } finally {
+        setIsRegistering(false);
+      }
+    },
+    []
+  );
+
+  const handleResetDemo = useCallback(async () => {
+    setIsResetting(true);
+    try {
+      await fetch("/api/demo/reset", { method: "POST" });
+      setDoctorNotes({});
+      setFeedbackCount(0);
+      // SSE will push the reset queue
+    } finally {
+      setIsResetting(false);
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="mx-auto max-w-4xl px-6 py-8">
+        <Skeleton className="h-8 w-64 mb-4" />
+        <Skeleton className="h-4 w-40 mb-8" />
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-48 w-full rounded-lg" />
+          ))}
         </div>
       </main>
-    </div>
+    );
+  }
+
+  return (
+    <main className="mx-auto max-w-4xl px-6 py-8">
+      <QueueHeaderBlock
+        mode={mode}
+        onModeChange={setMode}
+        patientCount={patients.length}
+        feedbackCount={feedbackCount}
+        onRegisterPatient={() => setRegistrationOpen(true)}
+        onResetDemo={handleResetDemo}
+        isResetting={isResetting}
+      />
+
+      <SectionSpacer size="sm" />
+
+      <QueueListBlock
+        patients={patients}
+        mode={mode}
+        doctorNotes={doctorNotes}
+        onReorder={handleReorder}
+        onStatusChange={handleStatusChange}
+        onViewPatient={handleViewPatient}
+      />
+
+      <OverrideModalBlock
+        open={overrideState !== null}
+        patientLabel={overrideState?.patientLabel ?? ""}
+        originalPosition={overrideState?.originalPosition ?? 0}
+        newPosition={overrideState?.newPosition ?? 0}
+        onConfirm={handleOverrideConfirm}
+        onCancel={handleOverrideCancel}
+      />
+
+      <PatientRegistrationBlock
+        open={registrationOpen}
+        onRegister={handleRegisterPatient}
+        onCancel={() => setRegistrationOpen(false)}
+        isRegistering={isRegistering}
+      />
+    </main>
   );
 }

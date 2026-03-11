@@ -33,7 +33,7 @@ The dataset can support a range of clinical AI tasks, including:
 - clinical note summarization
 - structured information extraction
 - clinical reasoning
-- retrieval-augmented generation (RAG)
+- retrieval-augmented generation (RAG) 
 - case similarity search
 - decision support prototyping
 
